@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Profile</title>
+
+<style>
+body{
+  margin:0;
+  min-height:100vh;
+  background:#050008;
+  color:#fff;
+  font-family:sans-serif;
+  overflow:hidden;
+}
+.credit{
+  margin-top:16px;
+  font-size:12px;
+  opacity:.6;
+  line-height:1.4;
+}
+.credit a{
+  color:#b44cff;
+  text-decoration:none;
+}
+.credit a:hover{
+  text-decoration:underline;
+}
+
+/* 🌌 อนุภาค */
+.particle{
+  position:fixed;
+  width:6px;
+  height:6px;
+  background:#b44cff;
+  border-radius:50%;
+  opacity:.6;
+  animation:float 12s linear infinite;
+}
+@keyframes float{
+  from{transform:translateY(110vh)}
+  to{transform:translateY(-10vh)}
+}
+
+/* 🟣 กรอบเรืองแสง (อยู่นอกสุด) */
+.glow-wrap{
+  position:relative;
+  max-width:360px;
+  margin:60px auto;
+}
+.glow-wrap::before{
+  content:"";
+  position:absolute;
+  inset:-8px;
+  border-radius:34px;
+  background:linear-gradient(270deg,#6a00ff,#c000ff,#6a00ff);
+  background-size:600% 600%;
+  animation:borderGlow 6s linear infinite;
+  z-index:0;
+}
+@keyframes borderGlow{
+  0%{background-position:0% 50%}
+  100%{background-position:100% 50%}
+}
+
+/* 🖤 การ์ด (ขอบดำชัด) */
+.card{
+  position:relative;
+  background:#0b0014;
+  border-radius:28px;
+  padding:24px;
+  text-align:center;
+  border:3px solid #000; /* ขอบดำ */
+  z-index:1;
+  animation:cardIn .8s ease-out .8s both;
+}
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(40px) scale(.95)}
+  to{opacity:1;transform:none}
+}
+
+/* 🎬 โลโก้ */
+.logo{
+  width:130px;
+  height:130px;
+  border-radius:50%;
+  margin:0 auto 10px;
+  border:4px solid #000;
+  box-shadow:0 0 30px #b44cff;
+  animation:logoDraw 1.2s ease-out;
+}
+@keyframes logoDraw{
+  0%{transform:scale(0);opacity:0}
+  60%{transform:scale(1.1)}
+  100%{transform:scale(1);opacity:1}
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:16px;
+  border:none;
+  background:#160026;
+  color:#fff;
+}
+
+/* ⚡ ปุ่ม */
+button,.btn{
+  position:relative;
+  overflow:hidden;
+  width:100%;
+  padding:15px;
+  margin:12px 0;
+  border-radius:18px;
+  border:none;
+  background:linear-gradient(135deg,#6a00ff,#c000ff);
+  color:#fff;
+  font-weight:bold;
+}
+button::before,.btn::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.9),transparent);
+  animation:electric 2.5s infinite;
+}
+@keyframes electric{
+  to{left:100%}
+}
+
+/* ripple */
+.ripple{
+  position:absolute;
+  border-radius:50%;
+  transform:scale(0);
+  animation:ripple .6s linear;
+  background:rgba(255,255,255,.6);
+}
+@keyframes ripple{
+  to{transform:scale(4);opacity:0}
+}
+
+.small{background:#160026;opacity:.85}
+.hide{display:none}
+</style>
+</head>
+
+<body>
+
+<audio id="clickSound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1a35c3c98f.mp3">
+</audio>
+
+<div class="glow-wrap">
+  <div id="profile" class="card">
+    <img id="avatarShow" class="logo">
+    <h2 id="nameShow">PLAYER</h2>
+    <p id="rankShow">ONLINE</p>
+
+    <a id="btn1" class="btn">▶ LINK 1</a>
+    <a id="btn2" class="btn">▶ LINK 2</a>
+
+    <button onclick="openEditor()" class="small">⚙ แก้ไขโปรไฟล์</button>
+  </div>
+  <div class="credit">
+  Created by <b>Gina</b><br>
+  <a href="https://instagram.com/yourig" target="_blank">@t2onx_</a>
+</div>
+
+  <div id="editor" class="card hide">
+    <h2> ตั้งค่าโปรไฟล์</h2>
+    <input id="name" placeholder="IGN">
+    <input id="rank" placeholder="Rank">
+    <input id="avatar" placeholder="ลิงก์รูป">
+    <input id="link1" placeholder="ลิงก์ 1">
+    <input id="link2" placeholder="ลิงก์ 2">
+    <button onclick="save()"> บันทึก</button>
+    <button onclick="closeEditor()" class="small"> กลับ</button>
+  </div>
+</div>
+
+<script>
+/* อนุภาค */
+for(let i=0;i<30;i++){
+  let p=document.createElement("div");
+  p.className="particle";
+  p.style.left=Math.random()*100+"vw";
+  p.style.animationDelay=Math.random()*10+"s";
+  document.body.appendChild(p);
+}
+
+/* ripple + sound */
+document.addEventListener("click",e=>{
+  if(e.target.tagName==="BUTTON"||e.target.classList.contains("btn")){
+    clickSound.currentTime=0;clickSound.play();
+    const b=e.target,c=document.createElement("span");
+    const d=Math.max(b.clientWidth,b.clientHeight);
+    c.style.width=c.style.height=d+"px";
+    c.style.left=e.offsetX-d/2+"px";
+    c.style.top=e.offsetY-d/2+"px";
+    c.className="ripple";
+    b.appendChild(c);
+    setTimeout(()=>c.remove(),600);
+  }
+});
+
+function openEditor(){
+  profile.classList.add("hide");
+  editor.classList.remove("hide");
+  name.value=localStorage.name||"";
+  rank.value=localStorage.rank||"";
+  avatar.value=localStorage.avatar||"";
+  link1.value=localStorage.link1||"";
+  link2.value=localStorage.link2||"";
+}
+function closeEditor(){
+  editor.classList.add("hide");
+  profile.classList.remove("hide");
+  load();
+}
+function save(){
+  localStorage.name=name.value;
+  localStorage.rank=rank.value;
+  localStorage.avatar=avatar.value;
+  localStorage.link1=link1.value;
+  localStorage.link2=link2.value;
+  closeEditor();
+}
+function load(){
+  nameShow.innerText=localStorage.name||"PLAYER";
+  rankShow.innerText=localStorage.rank||"ONLINE";
+  avatarShow.src=localStorage.avatar||"";
+  btn1.href=localStorage.link1||"#";
+  btn2.href=localStorage.link2||"#";
+}
+load();
+</script>
+
+</body>
+  </html>
